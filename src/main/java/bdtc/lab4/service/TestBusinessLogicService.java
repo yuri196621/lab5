@@ -28,4 +28,8 @@ public class TestBusinessLogicService {
     public List<PersonEntity> processGetAll(){
         return testServiceRepository.getAll();
     }
+
+    public boolean processCheck(){
+        return testServiceRepository.check();
+    }
 }

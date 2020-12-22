@@ -1,5 +1,6 @@
 package bdtc.lab4.config;
 
+import bdtc.lab4.controller.HealthController;
 import bdtc.lab4.controller.TestServiceController;
 import bdtc.lab4.dao.TestServiceRepository;
 import bdtc.lab4.model.PersonEntity;
@@ -28,5 +29,10 @@ public class ServiceConf {
     @Bean
     TestServiceController testServiceController(TestBusinessLogicService testBusinessLogicService){
         return new TestServiceController(testBusinessLogicService);
+    }
+
+    @Bean
+    HealthController healthController(TestBusinessLogicService testBusinessLogicService){
+        return new HealthController(testBusinessLogicService);
     }
 }

@@ -38,4 +38,9 @@ public class TestServiceRepository {
 
         return persons;
     }
+
+    public boolean check(){
+        ignite.getOrCreateCache(personCacheConfiguration);
+        return true;
+    }
 }
