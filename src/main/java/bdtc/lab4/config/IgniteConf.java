@@ -20,22 +20,29 @@ import java.util.UUID;
 
 @Configuration
 public class IgniteConf {
-    /**
-     * имя экземпляра узла
-     */
+
     public static final UUID instanceName = UUID.randomUUID();
 
-    /**
-     * Локальные адрес узла
-     */
-    @Value("${testservice.node.localAddr:127.0.0.1}")
+    @Value("${testservice.ignite.localAddr:127.0.0.1}")
     private String localAddr;
 
-    @Value("${testservice.node.ipFinderAddresses:dummy}")
+    @Value("${testservice.ignite.ipFinderAddresses:dummy}")
     private String ipFinderAddresses;
 
-    @Value("${testservice.node.clientMode:false}")
+    @Value("${testservice.ignite.clientMode:false}")
     private boolean clientMode;
+
+    @Value("${testservice.ignite.kuberMode:false}")
+    private boolean kuberMode;
+
+    @Value("${testservice.ignite.serviceName}")
+    private String serviceName;
+
+    @Value("${testservice.ignite.namespace}")
+    private String namespace;
+
+    @Value("${testservice.ignite.masterUrl}")
+    private String masterUrl;
 
     @Bean
     public TcpDiscoveryIpFinder tcpDiscoveryIpFinder() {
@@ -57,14 +64,35 @@ public class IgniteConf {
         return discoverySpi;
     }
 
+    @Bean
+    public DiscoverySpi kuberDiscoverySpi() {
+        TcpDiscoverySpi discoverySpi = new TcpDiscoverySpi();
+        TcpDiscoveryKubernetesIpFinder ipFinder = new TcpDiscoveryKubernetesIpFinder();
+        ipFinder.setServiceName(serviceName);
+        ipFinder.setNamespace(namespace);
+        ipFinder.setMasterUrl(masterUrl);
+        discoverySpi.setIpFinder(ipFinder);
+
+        return discoverySpi;
+    }
+
 
     @Bean
-    public IgniteConfiguration igniteConfiguration(DiscoverySpi discoverySpi) {
+    public IgniteConfiguration igniteConfiguration(DiscoverySpi discoverySpi, DiscoverySpi kuberDiscoverySpi) {
         IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
         igniteConfiguration.setIgniteInstanceName(instanceName.toString());
         igniteConfiguration.setPeerClassLoadingEnabled(true);
-        igniteConfiguration.setClientMode(clientMode);
-        igniteConfiguration.setDiscoverySpi(discoverySpi);
+        if (kuberMode){
+            System.out.println("Ignite config - kuber");
+            System.out.println(kuberDiscoverySpi);
+            igniteConfiguration.setDiscoverySpi(kuberDiscoverySpi);
+        }
+        else {
+            System.out.println("Ignite config - local");
+            igniteConfiguration.setClientMode(clientMode);
+            igniteConfiguration.setDiscoverySpi(discoverySpi);
+            System.out.println(discoverySpi);
+        }
 
         return igniteConfiguration;
     }
@@ -81,7 +109,8 @@ public class IgniteConf {
     public CacheConfiguration<UUID, PersonEntity> ignitePersonCacheConfiguration() {
         CacheConfiguration<UUID, PersonEntity> personCacheCfg = new CacheConfiguration<>();
         personCacheCfg.setName("person");
-        personCacheCfg.setCacheMode(CacheMode.REPLICATED);
+        personCacheCfg.setCacheMode(CacheMode.PARTITIONED);
+        personCacheCfg.setBackups(2);
         personCacheCfg.setAtomicityMode(CacheAtomicityMode.ATOMIC);
         personCacheCfg.setIndexedTypes(UUID.class, PersonEntity.class);
 
