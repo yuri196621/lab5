@@ -6,7 +6,9 @@
 
 установить brew из под root нельзя, поэтому устанавливаем из под обычного пользователя hpc (пароль 1234567890)
 
-    su hpc 
+    usermod -aG wheel hpc
+    su hpc
+    cd
 
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
     test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
