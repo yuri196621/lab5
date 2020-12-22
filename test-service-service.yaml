@@ -1,11 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: test-service-service
+  name: ignite
+  namespace: ignite-test
 spec:
   type: NodePort
   selector:
-    app: test-service
+    app: ignitetest
   ports:
     - port: 8080
       targetPort: 8080

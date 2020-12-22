@@ -2,22 +2,39 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-service
+  namespace: ignite-test
 spec:
   selector:
     matchLabels:
-      app: test-service
+      app: ignitetest
   replicas: 1
   template:
     metadata:
       labels:
-        app: test-service
+        app: ignitetest
     spec:
+      serviceAccountName: ignite
       containers:
         - name: test-service-container
-          image: "docker.io/mmrovnyagin/test-service:latest"
-          env:
-            - name: IP_FINDER_ADDRS
-              value: "0.0.0.0:47500"
+          image: "docker.io/mmrovnyagin/test-service:lab5"
+          resources:
+            requests:
+              memory: "600Mi"
+              cpu: "500m"
+            limits:
+              memory: "700Mi"
+              cpu: "500m"
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: testservice-config
           ports:
             - name: http
               containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 5
+            failureThreshold: 3
