@@ -1,19 +1,29 @@
-Создаем запись в кеше через запрос в приложение из Postman 
+**Развертывание minikube**
 
-(Для CentOS 7 удобно загрузить и распаковать архив с официального сайта:
-https://www.postman.com/downloads/
-установить библиотеку yum install libXScrnSaver
-запустить Postman, при первом запуске выбрать Sign in / Sign up through email instead внизу страницы, чтобы не логиниться с google-аккаунтом)
+Установка brew
+sudo yum groupinstall 'Development Tools' && sudo yum install curl file git
 
-Создание записи:
+установить brew из под root нельзя, поэтому устанавливаем из под обычного пользователя hpc (пароль 1234567890)
+su hpc 
 
-POST http://localhost:8080/person/create
-{
-      "name": "bubu"
-}
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+test -d ~/.linuxbrew && eval $(~/.linuxbrew/bin/brew shellenv)
+test -d /home/linuxbrew/.linuxbrew && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bash_profile
+test -r ~/.bash_profile && echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.bashrc
+echo "eval \$($(brew --prefix)/bin/brew shellenv)" >>~/.profile
 
-ответ 200
+Установка minikube
+sudo curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+sudo chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+brew install minikube
+sudo usermod -aG docker $USER && newgrp docker
+
+minikube start --vm-driver=docker
+minikube dashboard &
+minikube ip
 
 
-Проверка наличия записи:
-GET http://localhost:8080/person/get/all
+Проверка доступности сервиса в minikube:
+GET http://{ip, полученный через minikube ip}:31007/person/get/all
