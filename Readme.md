@@ -27,6 +27,7 @@
 
 Запустить minikube
 
+    minikube addons enable metrics-server
     minikube start --vm-driver=docker
     minikube dashboard &
     minikube ip
